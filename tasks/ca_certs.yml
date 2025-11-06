@@ -1,0 +1,35 @@
+---
+- name: ca_certs | Create CA directories
+  ansible.builtin.file:
+    path: "{{ self_pki_ca_certificate_path }}"
+    state: directory
+    owner: "{{ self_pki_ca_certificate_owner }}"
+    mode: "{{ __self_pki_ca_certificate_permissions }}"
+
+- name: ca_certs | Create private key with password protection
+  community.crypto.openssl_privatekey:
+    path: "{{ self_pki_ca_private_key_path }}/{{ self_pki_ca_private_key_name }}.key"
+    passphrase: "{{ self_pki_ca_private_key_passphrase }}"
+    size: "{{ self_pki_ca_private_key_encrypt_size }}"
+    type: "{{ self_pki_ca_private_key_encrypt_type }}"
+    backup: "{{ self_pki_ca_private_key_backup }}"
+
+- name: ca_certs | Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ self_pki_ca_private_key_path }}/{{ self_pki_ca_private_key_name }}.key"
+    privatekey_passphrase: "{{ self_pki_ca_private_key_passphrase }}"
+    common_name: "{{ self_pki_ca_certificate_common_name }}"
+    use_common_name_for_san: "{{ __self_pki_ca_certificate_use_common_name_for_san }}"
+    basic_constraints: "{{ self_pki_ca_certificate_basic_constraints }}"
+    basic_constraints_critical: "{{ self_pki_ca_certificate_basic_constraints_critical }}"
+    key_usage: "{{ self_pki_ca_private_key_usage }}"
+    key_usage_critical: "{{ self_pki_ca_private_key_usage_critical }}"
+  register: __ca_csr
+
+- name: ca_certs | Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ self_pki_ca_certificate_path }}/{{ self_pki_ca_certificate_name }}.pem"
+    csr_content: "{{ __ca_csr.csr }}"
+    privatekey_path: "{{ self_pki_ca_private_key_path }}/{{ self_pki_ca_private_key_name }}.key"
+    privatekey_passphrase: "{{ self_pki_ca_private_key_passphrase }}"
+    provider: "{{ __self_pki_ca_certificate_provider }}"

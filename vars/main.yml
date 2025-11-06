@@ -1,0 +1,7 @@
+---
+__self_pki_ca_certificate_permissions: "0600"
+__self_pki_ca_certificate_use_common_name_for_san: false
+__self_pki_ca_certificate_provider: selfsigned
+
+__self_pki_client_certificate_permissions: "0600"
+__self_pki_client_certificate_provider: ownca

@@ -1,0 +1,6 @@
+---
+- name: Import CA certificate tasks
+  ansible.builtin.import_tasks: ca_certs.yml
+
+- name: Import client certificate tasks
+  ansible.builtin.import_tasks: client_certs.yml

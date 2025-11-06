@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  namespace: mekatum
+  role_name: self_pki
+  author: Max Muller
+  description: This Ansible role issues a self-signed root certificate and issues certificates for domains signed with this self-signed root certificate.
+  license: GPL-3.0-only
+  min_ansible_version: "2.15"
+
+  galaxy_tags:
+    - linux
+    - pki
+
+dependencies: []
+collections:
+  - community.crypto

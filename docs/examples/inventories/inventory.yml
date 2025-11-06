@@ -1,0 +1,19 @@
+---
+all:
+  children:
+
+    ca_server:
+      hosts:
+        ca-server.domain.lan:
+          ansible_host: 192.168.56.254
+      vars:
+        ansible_user: vagrant
+        ansible_password: vagrant
+
+    clients:
+      hosts:
+        client.domain.lan:
+          ansible_host: 192.168.56.254
+      vars:
+        ansible_user: vagrant
+        ansible_password: vagrant

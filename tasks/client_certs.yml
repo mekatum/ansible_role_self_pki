@@ -1,0 +1,48 @@
+---
+- name: client_certs | Create client cert directories
+  ansible.builtin.file:
+    path: "{{ self_pki_client_certificate_path }}"
+    state: directory
+    owner: "{{ self_pki_client_certificate_owner }}"
+    mode: "{{ __self_pki_client_certificate_permissions }}"
+
+- name: client_certs | Create private key for new certificate on CA_server
+  community.crypto.openssl_privatekey:
+    path: "{{ self_pki_client_private_key_path }}/{{ self_pki_client_private_key_name }}.key"
+
+- name: client_certs | Create certificate signing request (CSR) for new certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ self_pki_client_private_key_path }}/{{ self_pki_client_private_key_name }}.key"
+    subject_alt_name: "{{ self_pki_client_certificate_subject_alt_name }}"
+  register: __csr
+
+- name: client_certs | Check whether certificate exists
+  ansible.builtin.stat:
+    path: "{{ self_pki_client_certificate_path }}/{{ self_pki_client_certificate_name }}.pem"
+  register: __certificate_exists
+
+- name: client_certs | Read existing certificate if exists
+  ansible.builtin.slurp:
+    src: "{{ self_pki_client_certificate_path }}/{{ self_pki_client_certificate_name }}.pem"
+  when: __certificate_exists.stat.exists
+  register: __certificate
+
+- name: client_certs | Sign certificate with CA
+  community.crypto.x509_certificate_pipe:
+    content: "{{ (__certificate.content | b64decode) if __certificate_exists.stat.exists else omit }}"
+    csr_content: "{{ __csr.csr }}"
+    provider: "{{ __self_pki_client_certificate_provider }}"
+    ownca_path: "{{ self_pki_ca_certificate_path }}/{{ self_pki_ca_certificate_name }}.pem"
+    ownca_privatekey_path: "{{ self_pki_ca_certificate_path }}/{{ self_pki_ca_private_key_name }}.key"
+    ownca_privatekey_passphrase: "{{ self_pki_ca_private_key_passphrase }}"
+    ownca_not_after: "{{ self_pki_client_certificate_ownca_not_after }}"
+    ownca_not_before: "{{ self_pki_client_certificate_ownca_not_before }}"
+  delegate_to: ca-server.domain.lan
+  run_once: true
+  register: __certificate
+
+- name: client_certs | Write certificate file on client
+  ansible.builtin.copy:
+    dest: "{{ self_pki_client_certificate_path }}/{{ self_pki_client_certificate_name }}.pem"
+    content: "{{ __certificate.certificate }}"
+    mode: "{{ __self_pki_client_certificate_permissions }}"

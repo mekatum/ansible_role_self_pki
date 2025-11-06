@@ -1,0 +1,31 @@
+---
+self_pki_ca_certificate_path: /root/CA
+self_pki_ca_certificate_owner: root
+self_pki_ca_certificate_name: ca_certificate
+self_pki_ca_certificate_common_name: My_company LLC
+self_pki_ca_certificate_basic_constraints_critical: true
+self_pki_ca_certificate_basic_constraints:
+  - CA:TRUE
+  - pathlen:0
+
+self_pki_ca_private_key_name: ca_private
+self_pki_ca_private_key_path: "{{ self_pki_ca_certificate_path }}"
+self_pki_ca_private_key_passphrase: Supper$ecr3t
+self_pki_ca_private_key_encrypt_type: RSA
+self_pki_ca_private_key_encrypt_size: 4096
+self_pki_ca_private_key_backup: false
+self_pki_ca_private_key_usage_critical: true
+self_pki_ca_private_key_usage:
+  - keyCertSign
+
+self_pki_client_private_key_name: client_private
+self_pki_client_private_key_path: /root/certs
+
+self_pki_client_certificate_name: client_certificate
+self_pki_client_certificate_path: "{{ self_pki_client_private_key_path }}"
+self_pki_client_certificate_owner: root
+self_pki_client_certificate_ownca_not_after: +365d
+self_pki_client_certificate_ownca_not_before: -1d
+self_pki_client_certificate_subject_alt_name:
+  - DNS:*.domain.lan
+  - DNS:domain.lan

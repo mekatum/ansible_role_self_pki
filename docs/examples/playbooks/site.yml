@@ -1,0 +1,18 @@
+---
+- name: CA setup
+  hosts: ca-server
+  become: true
+  tasks:
+    - name: Generate CA cert
+      ansible.builtin.import_role:
+        name: mekatum.self_pki
+        tasks_from: ca_certs.yml
+
+- name: Client setup
+  hosts: clients
+  become: true
+  tasks:
+    - name: Generate client certs
+      ansible.builtin.import_role:
+        name: mekatum.self_pki
+        tasks_from: client_certs.yml
